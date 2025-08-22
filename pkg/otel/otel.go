@@ -7,9 +7,11 @@ import (
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/log/global"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
@@ -43,6 +45,7 @@ func (o *Otel) Init() {
 	}
 	newTraceProvider(ctx, res)
 	newLoggerProvider(ctx, res, environment)
+	newMetricsProvider(ctx, res)
 	slog.Info("Starting Otel")
 }
 
@@ -87,4 +90,16 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource, environment 
 
 	slog.SetDefault(logger)
 	global.SetLoggerProvider(lp)
+}
+
+func newMetricsProvider(ctx context.Context, res *resource.Resource) {
+	exporter, err := otlpmetricgrpc.New(ctx)
+	if err != nil {
+		panic(err)
+	}
+	mp := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(exporter)),
+		sdkmetric.WithResource(res),
+	)
+	otel.SetMeterProvider(mp)
 }
