@@ -7,7 +7,7 @@ import (
 
 	"go.opentelemetry.io/contrib/bridges/otelslog"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/log/global"
@@ -93,7 +93,7 @@ func newLoggerProvider(ctx context.Context, res *resource.Resource, environment 
 }
 
 func newMetricsProvider(ctx context.Context, res *resource.Resource) {
-	exporter, err := otlpmetricgrpc.New(ctx)
+	exporter, err := otlpmetrichttp.New(ctx)
 	if err != nil {
 		panic(err)
 	}
